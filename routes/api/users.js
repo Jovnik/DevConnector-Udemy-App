@@ -29,7 +29,7 @@ router.post('/', [
             return res.status(400).json({ errors: [{msg: 'User already exists'}] });    //why do we need the return? (is it if we have multiple res.sends?? Looks like we need to add return if its not the last res.status or res.json etc)
         }
 
-        // Get users gravatar - not really going to implement this in my applications
+        // Get users gravatar 
         const avatar = gravatar.url(email, {
             s: '200',
             r: 'pg',
