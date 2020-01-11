@@ -1,5 +1,6 @@
 const express = require('express');
 const connectDB = require('./config/db');
+const morgan = require('morgan');
 
 const app = express();
 
@@ -9,9 +10,7 @@ connectDB();
 //Init middleware
 app.use(express.json( { extended: false }));    // because exteded is false you cannot post a nested object
 
-app.get('/', (req, res) => {
-    res.send('Splash Page');
-})
+app.use(morgan('tiny'));
 
 //Define Routes
 app.use('/api/users', require('./routes/api/users'));

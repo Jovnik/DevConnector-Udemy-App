@@ -1,12 +1,19 @@
 const express = require('express');
+const request = require('request');
+const config = require('config');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator');
 
 const Profile = require('../../models/Profile');
 const User = require('../../models/User');
+const Post = require('../../models/Post');
 
 //How can we use mongoose comands such as findOne and save etc. even when we dont require mongoose into the file
+
+router.get('/test', (req, res) => {
+    res.send('Testing on profile route');
+})
 
 // @route      GET api/profile/me   //just our profile based on the user id in the token
 // @desc       Get current users profile
@@ -147,7 +154,8 @@ router.get('/user/:user_id', async(req, res) => {
 // @access     Private 
 router.delete('/', auth, async(req, res) => {
     try {
-        // to do  - remove users posts
+        // remove users posts
+        await Post.deleteMany({ user: req.user._id })   
 
         // Remove profile 
         await Profile.findOneAndRemove({ user: req.user.id }); 
@@ -212,7 +220,7 @@ router.delete('/experience/:experience_id', auth, async(req, res) => {
     try {
         const profile = await Profile.findOne({ user: req.user.id });
         
-        //Get remove index
+        // Get remove index
         // const removeIndex = profile.experience.findIndex(experience => experience.id == req.params.experience_id);
         const removeIndex = profile.experience.map(exp => exp.id).indexOf(req.params.experience_id);
 
@@ -294,5 +302,35 @@ router.delete('/education/:education_id', auth, async(req, res) => {
         res.status(500).send('Server Error');
     }
 })
+
+// @route      GET api/profile/github/:username
+// @desc       Get user repos from github
+// @access     Public
+router.get('/github/:username', (req, res) => {
+    try {
+        const options = {
+            uri: `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${config.get('githubClientId')}&client_secret=${config.get('githubSecret')}`,
+            method: 'GET',
+            headers: {
+                'user-agent': 'node.js'
+            } 
+        }
+
+        request(options, (error, response, body) => {
+            if(error) console.error(error);
+
+            if(response.statusCode !== 200) {
+                return res.status(404).json({ msg: 'No github profile found' })
+            }
+
+            res.json(JSON.parse(body));
+        })
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+})
+
 module.exports = router;
 
