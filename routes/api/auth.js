@@ -11,7 +11,6 @@ const User = require('../../models/User');
 // @route      GET api/auth
 // @desc       Test Route   
 // @access     Public (dont need to be authorized to access this route);
-
 //protect the route with the auth middleware
 router.get('/', auth, async(req, res) => {
     try {
